@@ -15,8 +15,9 @@ import 'package:spotube/utils/platform.dart';
 class AudioServices with WidgetsBindingObserver {
   final MobileAudioService? mobile;
   final WindowsAudioService? smtc;
+  final Ref ref;
 
-  AudioServices(this.mobile, this.smtc) {
+  AudioServices(this.mobile, this.smtc, this.ref) {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -39,33 +40,16 @@ class AudioServices with WidgetsBindingObserver {
               androidNotificationChannelName: 'Spotube',
               androidNotificationOngoing: false,
               androidStopForegroundOnPause: false,
-              androidNotificationIcon: "drawable/ic_launcher_monochrome",
-              androidNotificationChannelDescription: "Spotube Media Controls",
             ),
           )
         : null;
-    final smtc = kIsWindows ? WindowsAudioService(ref, playback) : null;
-
-    return AudioServices(mobile, smtc);
+    final smtc = kIsWindows ? await WindowsAudioService.create(playback) : null;
+    return AudioServices(mobile, smtc, ref);
   }
 
-  Future<void> addTrack(Track track) async {
-    await smtc?.addTrack(track);
-    mobile?.addItem(MediaItem(
-      id: track.id!,
-      album: track.album?.name ?? "",
-      title: track.name!,
-      artist: (track.artists)?.asString() ?? "",
-      duration: track is SourcedTrack
-          ? track.sourceInfo.duration
-          : Duration(milliseconds: track.durationMs ?? 0),
-      artUri: Uri.parse(
-        (track.album?.images).asUrlString(
-          placeholder: ImagePlaceholder.albumArt,
-        ),
-      ),
-      playable: true,
-    ));
+  void setMediaItem(MediaItem mediaItem) {
+    mobile?.setMediaItem(mediaItem);
+    smtc?.setMediaItem(mediaItem);
   }
 
   void activateSession() {
@@ -81,7 +65,7 @@ class AudioServices with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final ecoMode = audioPlayer.ref.read(userPreferencesProvider).ecoMode;
+    final ecoMode = ref.read(userPreferencesProvider).ecoMode;
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.inactive:
@@ -98,7 +82,7 @@ class AudioServices with WidgetsBindingObserver {
         break;
       case AppLifecycleState.detached:
         deactivateSession();
-        audioPlayer.pause();
+        // audioPlayer.pause(); // Ajoute la logique si besoin
         break;
       default:
         break;
