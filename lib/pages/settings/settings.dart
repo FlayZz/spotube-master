@@ -27,46 +27,38 @@ class SettingsPage extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final controller = useScrollController();
     final preferencesNotifier = ref.watch(userPreferencesProvider.notifier);
-
-    return SafeArea(
-      bottom: false,
-      child: Scaffold(
-        headers: [
-          TitleBar(
-            title: Text(context.l10n.settings),
-          )
-        ],
-        child: Scrollbar(
-          controller: controller,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1366),
-              child: ScrollConfiguration(
-                behavior: const ScrollBehavior().copyWith(scrollbars: false),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: ListView(
-                    controller: controller,
-                    children: [
-                      const SettingsAccountSection(),
-                      const SettingsLanguageRegionSection(),
-                      const SettingsAppearanceSection(),
-                      const SettingsPlaybackSection(),
-                      const SettingsDownloadsSection(),
-                      if (kIsDesktop) const SettingsDesktopSection(),
-                      if (!kIsWeb) const SettingsDevelopersSection(),
-                      const SettingsAboutSection(),
-                      if (ref.watch(userPreferencesProvider).ecoMode)
-                        const SettingsPerformanceSection(),
-                      Center(
-                        child: Button.destructive(
-                          onPressed: preferencesNotifier.reset,
-                          child: Text(context.l10n.restore_defaults),
-                        ),
+    return ShadAppBarWrapper(
+      title: Text(context.l10n.settings),
+      child: Scrollbar(
+        controller: controller,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1366),
+            child: ScrollConfiguration(
+              behavior: const ScrollBehavior().copyWith(scrollbars: false),
+              child: Material(
+                type: MaterialType.transparency,
+                child: ListView(
+                  controller: controller,
+                  children: [
+                    const SettingsAccountSection(),
+                    const SettingsLanguageRegionSection(),
+                    const SettingsAppearanceSection(),
+                    const SettingsPlaybackSection(),
+                    const SettingsDownloadsSection(),
+                    if (kIsDesktop) const SettingsDesktopSection(),
+                    if (!kIsWeb) const SettingsDevelopersSection(),
+                    const SettingsAboutSection(),
+                    // if (ref.watch(userPreferencesProvider).ecoMode)
+                    //   const SettingsPerformanceSection(),
+                    Center(
+                      child: Button.destructive(
+                        onPressed: preferencesNotifier.reset,
+                        child: Text(context.l10n.restore_defaults),
                       ),
-                      const SizedBox(height: 200),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 200),
+                  ],
                 ),
               ),
             ),
