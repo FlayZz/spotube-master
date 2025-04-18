@@ -56,8 +56,7 @@ class SettingsPage extends HookConsumerWidget {
                       if (kIsDesktop) const SettingsDesktopSection(),
                       if (!kIsWeb) const SettingsDevelopersSection(),
                       const SettingsAboutSection(),
-                      if (ref.watch(userPreferencesProvider).ecoMode)
-                        const SettingsPerformanceSection(),
+                      // Section performance désactivée car le widget n'existe pas
                       Center(
                         child: Button.destructive(
                           onPressed: preferencesNotifier.reset,

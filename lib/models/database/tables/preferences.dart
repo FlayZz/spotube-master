@@ -1,3 +1,8 @@
+import 'package:flutter/material.dart' show Locale, Colors;
+import 'package:spotube/models/database/typeconverters/color.dart';
+import 'package:spotube/models/database/typeconverters/locale.dart';
+import 'package:spotube/models/database/typeconverters/string_list.dart';
+// Ajoute ici les autres imports nécessaires pour SourceQualities, Market, ThemeMode, SpotubeColor, etc. si besoin
 part of '../database.dart';
 
 enum LayoutMode {
@@ -150,8 +155,7 @@ class PreferencesTable extends Table {
       endlessPlayback: true,
       enableConnect: false,
       cacheMusic: true,
-      cacheMusic: true,
-      ecoMode: false, // Ajouté : mode éco désactivé par défaut
+      ecoMode: false,
     );
   }
 }

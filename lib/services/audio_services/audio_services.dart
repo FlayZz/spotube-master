@@ -15,8 +15,9 @@ import 'package:spotube/utils/platform.dart';
 class AudioServices with WidgetsBindingObserver {
   final MobileAudioService? mobile;
   final WindowsAudioService? smtc;
+  final Ref ref;
 
-  AudioServices(this.mobile, this.smtc) {
+  AudioServices(this.mobile, this.smtc, this.ref) {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -80,8 +81,9 @@ class AudioServices with WidgetsBindingObserver {
   static final ValueNotifier<bool> ecoUiSuspended = ValueNotifier(false);
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final ecoMode = audioPlayer.ref.read(userPreferencesProvider).ecoMode;
+  @override
+void didChangeAppLifecycleState(AppLifecycleState state) {
+    final ecoMode = ref.read(userPreferencesProvider).ecoMode;
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.inactive:

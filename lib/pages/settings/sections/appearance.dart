@@ -31,7 +31,7 @@ class SettingsAppearanceSection extends HookConsumerWidget {
 
     final children = [
       ListTile(
-        leading: const Icon(SpotubeIcons.bolt),
+        leading: const Icon(SpotubeIcons.chart),
         title: const Text("Mode Éco (Optimisation)"),
         subtitle: const Text("Réduit la consommation CPU/GPU/RAM, animations simplifiées, framerate limité à 30 FPS. Idéal pour les PC portables, anciens ou en économie d'énergie."),
         trailing: Switch(

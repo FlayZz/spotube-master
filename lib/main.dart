@@ -4,7 +4,15 @@ import 'dart:ui';
 
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' as material;
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:spotube/services/audio_services/audio_services.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:spotube/services/audio_services/audio_services.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:spotube/services/audio_services/audio_services.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:spotube/services/audio_services/audio_services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_discord_rpc/flutter_discord_rpc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -62,10 +70,9 @@ Future<void> main(List<String> rawArgs) async {
   final ecoMode = container.read(userPreferencesProvider).ecoMode;
   if (ecoMode) {
     // Limite la fréquence d'images à 30 FPS si possible (Flutter 3.10+)
-    // ignore: deprecated_member_use
-    material.SchedulerBinding.instance?.setFrameRate(30);
+    SchedulerBinding.instance?.setFrameRate(30);
     // Désactive les animations globales
-    material.timeDilation = 2.0;
+    timeDilation = 2.0;
     // Ultra éco : écoute l'état ecoUiSuspended
     AudioServices.ecoUiSuspended.addListener(() async {
       if (AudioServices.ecoUiSuspended.value) {
@@ -76,17 +83,6 @@ Future<void> main(List<String> rawArgs) async {
         await windowManager.show();
       }
     });
-  }
-
-  // --- MODE ÉCO GLOBAL ---
-  final container = ProviderContainer();
-  final ecoMode = container.read(userPreferencesProvider).ecoMode;
-  if (ecoMode) {
-    // Limite la fréquence d'images à 30 FPS si possible (Flutter 3.10+)
-    // ignore: deprecated_member_use
-    material.SchedulerBinding.instance?.setFrameRate(30);
-    // Désactive les animations globales
-    material.timeDilation = 2.0;
   }
 
   if (rawArgs.contains("web_view_title_bar")) {
@@ -167,7 +163,7 @@ Future<void> main(List<String> rawArgs) async {
 
 class Spotube extends HookConsumerWidget {
   // Permet de propager l'état du mode éco dans toute l'app
-  bool get isEcoMode => useProvider(userPreferencesProvider).ecoMode;
+  bool get isEcoMode => ref.watch(userPreferencesProvider).ecoMode;
   // TODO: Utiliser isEcoMode pour désactiver/simplifier les animations, effets, images lourdes, etc. dans les widgets enfants
 
   const Spotube({super.key});
