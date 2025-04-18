@@ -2,7 +2,7 @@ name: Build Spotube Optimisé for Windows
 
 on:
   push:
-    branches: [eco-optimized]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
