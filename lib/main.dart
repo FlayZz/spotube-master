@@ -52,6 +52,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:yt_dlp_dart/yt_dlp_dart.dart';
 import 'package:flutter_new_pipe_extractor/flutter_new_pipe_extractor.dart';
+import 'package:spotube/services/audio_services/audio_services.dart';
 
 Future<void> main(List<String> rawArgs) async {
   // --- MODE ULTRA ÉCO ---
