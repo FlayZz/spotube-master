@@ -1,0 +1,32 @@
+name: Build Spotube Optimisé for Windows
+
+on:
+  push:
+    branches: [eco-optimized]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build Windows exe
+        run: flutter build windows
+      - name: Download Inno Setup
+        run: |
+          Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "is.exe"
+          Start-Process is.exe -ArgumentList "/VERYSILENT" -Wait
+      - name: Package with Inno Setup
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/windows/installer/SpotubeSetup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
