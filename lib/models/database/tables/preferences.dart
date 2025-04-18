@@ -17,7 +17,9 @@ enum AudioSource {
   jiosaavn,
   invidious;
 
-  String get label => name[0].toUpperCase() + name.substring(1);
+  String get label {
+    return name[0].toUpperCase() + name.substring(1);
+  }
 }
 
 enum YoutubeClientEngine {
@@ -61,62 +63,95 @@ enum SearchMode {
 }
 
 class PreferencesTable extends Table {
-  BoolColumn get ecoMode => boolean().withDefault(const Constant(false))();
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get audioQuality => textEnum<SourceQualities>()
-      .withDefault(Constant(SourceQualities.high.name))();
-  BoolColumn get albumColorSync =>
-      boolean().withDefault(const Constant(true))();
-  BoolColumn get amoledDarkTheme =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get checkUpdate => boolean().withDefault(const Constant(true))();
-  BoolColumn get normalizeAudio =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get showSystemTrayIcon =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get systemTitleBar =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get skipNonMusic => boolean().withDefault(const Constant(false))();
-  TextColumn get closeBehavior => textEnum<CloseBehavior>()
-      .withDefault(Constant(CloseBehavior.close.name))();
-  TextColumn get accentColorScheme => text()
-      .withDefault(const Constant("Blue:0xFF2196F3"))
-      .map(const SpotubeColorConverter())();
-  TextColumn get layoutMode =>
-      textEnum<LayoutMode>().withDefault(Constant(LayoutMode.adaptive.name))();
-  TextColumn get locale => text()
-      .withDefault(
-        const Constant('{"languageCode":"system","countryCode":"system"}'),
-      )
-      .map(const LocaleConverter())();
-  TextColumn get market =>
-      textEnum<Market>().withDefault(Constant(Market.US.name))();
-  TextColumn get searchMode =>
-      textEnum<SearchMode>().withDefault(Constant(SearchMode.youtube.name))();
-  TextColumn get downloadLocation => text().withDefault(const Constant(""))();
-  TextColumn get localLibraryLocation =>
-      text().withDefault(const Constant("")).map(const StringListConverter())();
-  TextColumn get pipedInstance =>
-      text().withDefault(const Constant("https://pipedapi.kavin.rocks"))();
-  TextColumn get invidiousInstance =>
-      text().withDefault(const Constant("https://inv.nadeko.net"))();
-  TextColumn get themeMode =>
-      textEnum<ThemeMode>().withDefault(Constant(ThemeMode.system.name))();
-  TextColumn get audioSource =>
-      textEnum<AudioSource>().withDefault(Constant(AudioSource.youtube.name))();
-  TextColumn get youtubeClientEngine => textEnum<YoutubeClientEngine>()
-      .withDefault(Constant(YoutubeClientEngine.youtubeExplode.name))();
-  TextColumn get streamMusicCodec =>
-      textEnum<SourceCodecs>().withDefault(Constant(SourceCodecs.weba.name))();
-  TextColumn get downloadMusicCodec =>
-      textEnum<SourceCodecs>().withDefault(Constant(SourceCodecs.m4a.name))();
-  BoolColumn get discordPresence =>
-      boolean().withDefault(const Constant(true))();
-  BoolColumn get endlessPlayback =>
-      boolean().withDefault(const Constant(true))();
-  BoolColumn get enableConnect =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get cacheMusic => boolean().withDefault(const Constant(true))();
+  BoolColumn get ecoMode {
+    return boolean().withDefault(const Constant(false))();
+  }
+  IntColumn get id {
+    return integer().autoIncrement()();
+  }
+  TextColumn get audioQuality {
+    return textEnum<SourceQualities>().withDefault(Constant(SourceQualities.high.name))();
+  }
+  BoolColumn get albumColorSync {
+    return boolean().withDefault(const Constant(true))();
+  }
+  BoolColumn get amoledDarkTheme {
+    return boolean().withDefault(const Constant(false))();
+  }
+  BoolColumn get checkUpdate {
+    return boolean().withDefault(const Constant(true))();
+  }
+  BoolColumn get normalizeAudio {
+    return boolean().withDefault(const Constant(false))();
+  }
+  BoolColumn get showSystemTrayIcon {
+    return boolean().withDefault(const Constant(false))();
+  }
+  BoolColumn get systemTitleBar {
+    return boolean().withDefault(const Constant(false))();
+  }
+  BoolColumn get skipNonMusic {
+    return boolean().withDefault(const Constant(false))();
+  }
+  TextColumn get closeBehavior {
+    return textEnum<CloseBehavior>().withDefault(Constant(CloseBehavior.close.name))();
+  }
+  TextColumn get accentColorScheme {
+    return text().withDefault(const Constant("Blue:0xFF2196F3")).map(const SpotubeColorConverter())();
+  }
+  TextColumn get layoutMode {
+    return textEnum<LayoutMode>().withDefault(Constant(LayoutMode.adaptive.name))();
+  }
+  TextColumn get locale {
+    return text().withDefault(
+      const Constant('{"languageCode":"system","countryCode":"system"}'),
+    ).map(const LocaleConverter())();
+  }
+  TextColumn get market {
+    return textEnum<Market>().withDefault(Constant(Market.US.name))();
+  }
+  TextColumn get searchMode {
+    return textEnum<SearchMode>().withDefault(Constant(SearchMode.youtube.name))();
+  }
+  TextColumn get downloadLocation {
+    return text().withDefault(const Constant(""))();
+  }
+  TextColumn get localLibraryLocation {
+    return text().withDefault(const Constant("")).map(const StringListConverter())();
+  }
+  TextColumn get pipedInstance {
+    return text().withDefault(const Constant("https://pipedapi.kavin.rocks"))();
+  }
+  TextColumn get invidiousInstance {
+    return text().withDefault(const Constant("https://inv.nadeko.net"))();
+  }
+  TextColumn get themeMode {
+    return textEnum<ThemeMode>().withDefault(Constant(ThemeMode.system.name))();
+  }
+  TextColumn get audioSource {
+    return textEnum<AudioSource>().withDefault(Constant(AudioSource.youtube.name))();
+  }
+  TextColumn get youtubeClientEngine {
+    return textEnum<YoutubeClientEngine>().withDefault(Constant(YoutubeClientEngine.youtubeExplode.name))();
+  }
+  TextColumn get streamMusicCodec {
+    return textEnum<SourceCodecs>().withDefault(Constant(SourceCodecs.weba.name))();
+  }
+  TextColumn get downloadMusicCodec {
+    return textEnum<SourceCodecs>().withDefault(Constant(SourceCodecs.m4a.name))();
+  }
+  BoolColumn get discordPresence {
+    return boolean().withDefault(const Constant(true))();
+  }
+  BoolColumn get endlessPlayback {
+    return boolean().withDefault(const Constant(true))();
+  }
+  BoolColumn get enableConnect {
+    return boolean().withDefault(const Constant(false))();
+  }
+  BoolColumn get cacheMusic {
+    return boolean().withDefault(const Constant(true))();
+  }
 
   // Default values as PreferencesTableData
   static PreferencesTableData defaults() {
