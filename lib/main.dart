@@ -23,6 +23,7 @@ import 'package:spotube/hooks/configurators/use_fix_window_stretching.dart';
 import 'package:spotube/hooks/configurators/use_get_storage_perms.dart';
 import 'package:spotube/hooks/configurators/use_has_touch.dart';
 import 'package:spotube/models/database/database.dart';
+import 'package:spotube/modules/settings/color_scheme_picker_dialog.dart';
 import 'package:spotube/provider/audio_player/audio_player_streams.dart';
 import 'package:spotube/provider/database/database.dart';
 import 'package:spotube/provider/glance/glance.dart';
@@ -55,7 +56,6 @@ Future<void> main(List<String> rawArgs) async {
   final ecoMode = container.read(userPreferencesProvider).ecoMode;
 
   if (ecoMode) {
-    // On supprime tout contrôle de framerate ici
     timeDilation = 2.0;
     AudioServices.ecoUiSuspended.addListener(() async {
       if (AudioServices.ecoUiSuspended.value) {
@@ -66,7 +66,10 @@ Future<void> main(List<String> rawArgs) async {
     });
   }
 
-  // Le reste de ton initialisation…
+  if (rawArgs.contains("web_view_title_bar")) {
+    if (runWebViewTitleBarWidget(rawArgs)) return;
+  }
+
   final arguments = await startCLI(rawArgs);
   AppLogger.initialize(arguments["verbose"]);
 
@@ -94,9 +97,9 @@ Future<void> main(List<String> rawArgs) async {
       await YtDlp.instance
           .setBinaryLocation(
             KVStoreService.getYoutubeEnginePath(YoutubeClientEngine.ytDlp) ??
-                "yt-dlp");
-      }
-          .catchError((e, stack) => null);
+                "yt-dlp${kIsWindows ? '.exe' : ''}",
+          )
+          .catchError((_) {});
       await FlutterDiscordRPC.initialize(Env.discordAppId);
     }
 
