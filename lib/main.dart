@@ -1,25 +1,13 @@
-import 'package:flutter/scheduler.dart';
 import 'dart:async';
 import 'dart:ui';
 
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:spotube/services/audio_services/audio_services.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:spotube/services/audio_services/audio_services.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:spotube/services/audio_services/audio_services.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:spotube/services/audio_services/audio_services.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_discord_rpc/flutter_discord_rpc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-
-import 'package:home_widget/home_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:local_notifier/local_notifier.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:metadata_god/metadata_god.dart';
@@ -35,7 +23,6 @@ import 'package:spotube/hooks/configurators/use_fix_window_stretching.dart';
 import 'package:spotube/hooks/configurators/use_get_storage_perms.dart';
 import 'package:spotube/hooks/configurators/use_has_touch.dart';
 import 'package:spotube/models/database/database.dart';
-import 'package:spotube/modules/settings/color_scheme_picker_dialog.dart';
 import 'package:spotube/provider/audio_player/audio_player_streams.dart';
 import 'package:spotube/provider/database/database.dart';
 import 'package:spotube/provider/glance/glance.dart';
@@ -63,58 +50,82 @@ import 'package:flutter_new_pipe_extractor/flutter_new_pipe_extractor.dart';
 import 'package:spotube/services/audio_services/audio_services.dart';
 
 Future<void> main(List<String> rawArgs) async {
-  // --- MODE ULTRA ÉCO ---
-  // Si ecoMode + ecoUiSuspended : on ferme la fenêtre principale et on garde le mini-player ou la tray
   WidgetsFlutterBinding.ensureInitialized();
   final container = ProviderContainer();
   final ecoMode = container.read(userPreferencesProvider).ecoMode;
+
   if (ecoMode) {
-    // Limite la fréquence d'images à 30 FPS si la méthode est disponible (Flutter 3.10+ uniquement)
-    try {
-      // ignore: invalid_use_of_visible_for_testing_member
-      // Certains canaux Flutter n'ont pas cette méthode, donc on vérifie dynamiquement
-      // ignore: undefined_method
-      // ignore: avoid_dynamic_calls
-      // ignore: unnecessary_cast
-      // ignore: unused_catch_clause
-      // ignore: empty_catches
-      // ignore: avoid_catches_without_on_clauses
-      // ignore: prefer_typing_uninitialized_variables
-      // ignore: unused_local_variable
-      // ignore: avoid_returning_null
-      // ignore: unnecessary_null_comparison
-      // ignore: dead_code
-      // ignore: unused_element
-      // ignore: unused_field
-      // ignore: unused_import
-      // ignore: unused_label
-      // ignore: unused_shown_name
-      // ignore: unused_local_variable
-      // ignore: unused_result
-      // ignore: unused_setter
-      // ignore: unused_this
-      // ignore: unused_typedef
-      // ignore: unused_variable
-      // ignore: unused_catch_clause
-      // ignore: unused_element
-      // ignore: unused_field
-      // ignore: unused_import
-      // ignore: unused_label
-      // ignore: unused_shown_name
-      // ignore: unused_local_variable
-      // ignore: unused_result
-      // ignore: unused_setter
-      // ignore: unused_this
-      // ignore: unused_typedef
-      // ignore: unused_variable
-      (SchedulerBinding.instance as dynamic).setFrameRate?.call(30);
-    } catch (e) {
-      // Méthode non disponible, on ignore l'erreur
-    }
-    // Désactive les animations globales
+    // On supprime tout contrôle de framerate ici
     timeDilation = 2.0;
-    // Ultra éco : écoute l'état ecoUiSuspended
-    // ...
+    AudioServices.ecoUiSuspended.addListener(() async {
+      if (AudioServices.ecoUiSuspended.value) {
+        await windowManager.hide();
+      } else {
+        await windowManager.show();
+      }
+    });
   }
-  // ...
+
+  // Le reste de ton initialisation…
+  final arguments = await startCLI(rawArgs);
+  AppLogger.initialize(arguments["verbose"]);
+
+  AppLogger.runZoned(() async {
+    final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+    await registerWindowsScheme("spotify");
+    tz.initializeTimeZones();
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+    MediaKit.ensureInitialized();
+    await migrateMacOsFromSandboxToNoSandbox();
+
+    if (kIsAndroid) {
+      await FlutterDisplayMode.setHighRefreshRate();
+      await NewPipeExtractor.init();
+    }
+
+    if (!kIsWeb) {
+      MetadataGod.initialize();
+    }
+
+    await KVStoreService.initialize();
+
+    if (kIsDesktop) {
+      await windowManager.setPreventClose(true);
+      await YtDlp.instance
+          .setBinaryLocation(
+            KVStoreService.getYoutubeEnginePath(YoutubeClientEngine.ytDlp) ??
+                "yt-dlp");
+      }
+          .catchError((e, stack) => null);
+      await FlutterDiscordRPC.initialize(Env.discordAppId);
+    }
+
+    if (kIsWindows) {
+      await SMTCWindows.initialize();
+    }
+
+    await EncryptedKvStoreService.initialize();
+    final database = AppDatabase();
+
+    if (kIsDesktop) {
+      await localNotifier.setup(appName: "Spotube");
+      await WindowManagerTools.initialize();
+    }
+
+    if (kIsIOS) {
+      HomeWidget.setAppGroupId("group.spotube_home_player_widget");
+    }
+
+    runApp(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWith((ref) => database),
+        ],
+        observers: const [
+          AppLoggerProviderObserver(),
+        ],
+        child: const Spotube(),
+      ),
+    );
+  });
 }

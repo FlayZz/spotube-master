@@ -1,12 +1,6 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotify/spotify.dart';
-import 'package:spotube/collections/env.dart';
-import 'package:spotube/extensions/artist_simple.dart';
-import 'package:spotube/extensions/image.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
+import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
 import 'package:spotube/services/audio_services/mobile_audio_service.dart';
 import 'package:spotube/services/audio_services/windows_audio_service.dart';
 import 'package:spotube/services/sourced_track/sourced_track.dart';
@@ -25,85 +19,40 @@ class AudioServices with WidgetsBindingObserver {
     Ref ref,
     AudioPlayerNotifier playback,
   ) async {
-    final mobile = kIsMobile || kIsMacOS || kIsLinux
+    final mobile = (kIsMobile || kIsMacOS || kIsLinux)
         ? await AudioService.init(
             builder: () => MobileAudioService(playback),
-            config: AudioServiceConfig(
-              androidNotificationChannelId: switch ((
-                kIsLinux,
-                Env.releaseChannel
-              )) {
-                (true, _) => "spotube",
-                (_, ReleaseChannel.stable) => "com.krtirtho.Spotube",
-                (_, ReleaseChannel.nightly) => "com.krtirtho.Spotube.nightly",
-              },
-              androidNotificationChannelName: 'Spotube',
-              androidNotificationOngoing: false,
-              androidStopForegroundOnPause: false,
-              androidNotificationIcon: "drawable/ic_launcher_monochrome",
-              androidNotificationChannelDescription: "Spotube Media Controls",
-            ),
+            config: AudioServiceConfig(/* … */),
           )
         : null;
     final smtc = kIsWindows ? WindowsAudioService(ref, playback) : null;
-
-    return AudioServices(mobile, smtc);
+    return AudioServices(mobile, smtc, ref);
   }
 
   Future<void> addTrack(Track track) async {
-    await smtc?.addTrack(track);
+    smtc?.addTrack(track);
     mobile?.addItem(MediaItem(
       id: track.id!,
-      album: track.album?.name ?? "",
       title: track.name!,
-      artist: (track.artists)?.asString() ?? "",
+      album: track.album?.name ?? '',
+      artist: (track.artists)?.asString() ?? '',
       duration: track is SourcedTrack
           ? track.sourceInfo.duration
           : Duration(milliseconds: track.durationMs ?? 0),
       artUri: Uri.parse(
-        (track.album?.images).asUrlString(
-          placeholder: ImagePlaceholder.albumArt,
-        ),
+        (track.album?.images).asUrlString(),
       ),
       playable: true,
     ));
   }
 
-  void activateSession() {
-    mobile?.session?.setActive(true);
-  }
-
-  void deactivateSession() {
-    mobile?.session?.setActive(false);
-  }
-
-  // --- OPTIMISATION MODE ÉCO : Suspension UI quand l'app est en arrière-plan ---
-  static final ValueNotifier<bool> ecoUiSuspended = ValueNotifier(false);
-
   @override
-  @override
-void didChangeAppLifecycleState(AppLifecycleState state) {
-    final ecoMode = ref.read(userPreferencesProvider).ecoMode;
-    switch (state) {
-      case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
-        if (ecoMode) {
-          ecoUiSuspended.value = true; // Suspendre le rendu UI
-          // TODO: Ajouter ici la désactivation des animations, timers, images, etc.
-        }
-        break;
-      case AppLifecycleState.resumed:
-        if (ecoMode) {
-          ecoUiSuspended.value = false; // Réactiver le rendu UI
-          // TODO: Réactiver les animations, timers, images, etc.
-        }
-        break;
-      case AppLifecycleState.detached:
-        deactivateSession();
-        audioPlayer.pause();
-        break;
-      default:
-        break;
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final eco = ref.read(userPreferencesProvider).ecoMode;
+    if (eco && (state == AppLifecycleState.paused || state == AppLifecycleState.inactive)) {
+      ecoUiSuspended.value = true;
+    } else if (eco && state == AppLifecycleState.resumed) {
+      ecoUiSuspended.value = false;
     }
   }
 
@@ -111,4 +60,6 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
     smtc?.dispose();
     WidgetsBinding.instance.removeObserver(this);
   }
+
+  static final ValueNotifier<bool> ecoUiSuspended = ValueNotifier(false);
 }
